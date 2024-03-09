@@ -91,9 +91,16 @@ def naive():
 # METHOD FOR TASK 1
 # Creates the k-Shingles of each document and returns a list of them
 def k_shingles():
+    k = parameters_dictionary["k"]
     docs_k_shingles = []  # holds the k-shingles of each document
+    for ID, text in document_list.items():
+        current_document = []
+        word_list = text.split()
+        for i in range(len(word_list)-k+1):
+            current_shingle = word_list[i:i+k]
+            current_document.append(" ".join(current_shingle))
 
-    
+        docs_k_shingles.append(current_document)
 
     return docs_k_shingles
 
@@ -101,12 +108,20 @@ def k_shingles():
 # METHOD FOR TASK 2
 # Creates a signatures set of the documents from the k-shingles list
 def signature_set(k_shingles):
-    docs_sig_sets = []
+    """
+    unique_shingles = set()
+    for document in k_shingles:
+        for shingle in document:
+            unique_shingles.add(shingle)
+    sorted_unique_shingles = sorted(unique_shingles)
+    input_matrices = np.zeros([len(k_shingles), len(sorted_unique_shingles)])
+    for i, document in enumerate(k_shingles):
+        for j, unique_shingle in enumerate(sorted_unique_shingles):
+            if unique_shingle in document:
+                input_matrices[i][j] = 1
 
-    # implement your code here
-
-    return docs_sig_sets
-
+    return input_matrices
+    """
 
 # METHOD FOR TASK 3
 
@@ -176,6 +191,7 @@ if __name__ == '__main__':
     print("Starting to create all k-shingles of the documents...")
     t4 = time.time()
     all_docs_k_shingles = k_shingles()
+    print(f"First 3 document shingles: {all_docs_k_shingles[0]}, {all_docs_k_shingles[1]},{all_docs_k_shingles[2]}")
     t5 = time.time()
     print("Representing documents with k-shingles took", t5 - t4, "sec\n")
 
