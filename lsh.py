@@ -107,23 +107,6 @@ def k_shingles():
 
 # METHOD FOR TASK 2
 # Creates a signatures set of the documents from the k-shingles list
-def k_shingles():
-    k = parameters_dictionary["k"]
-    docs_k_shingles = []  # holds the k-shingles of each document
-    for ID, text in document_list.items():
-        current_document = []
-        word_list = text.split()
-        for i in range(len(word_list)-k+1):
-            current_shingle = word_list[i:i+k]
-            current_document.append(" ".join(current_shingle))
-
-        docs_k_shingles.append(current_document)
-
-    return docs_k_shingles
-
-
-# METHOD FOR TASK 2
-# Creates a signatures set of the documents from the k-shingles list
 def signature_set(k_shingles):
     docs_sig_sets = []
     
@@ -161,9 +144,9 @@ def larger_prime(N):
         i+=1
     return primes[-1]
 
-def gen_func(num_perm,p,N):
-    a=random.randint(1,num_perm)
-    b=random.randint(1,num_perm)
+def gen_func(p,N):
+    a=random.randint(1,p-1)
+    b=random.randint(1,p-1)
     return lambda r: ((a*r+b)%p)%N
 
 # METHOD FOR TASK 3
@@ -171,23 +154,32 @@ def gen_func(num_perm,p,N):
 # A function for generating hash functions
 def generate_hash_functions(num_perm, N):
     hash_funcs = []
-    p=larger_prime(N)
-    
+    p=10000000207
     for i in range(num_perm):
-        x=gen_func(num_perm,p,N)
+        x=gen_func(p,N)
         while x in hash_funcs:
-            x=gen_func(num_perm,p,N)
+            x=gen_func(p,N)
         hash_funcs.append(x)
+    
     return hash_funcs
+
+def print_progress_bar(i, N):
+    bar_length = 40
+    progress = i / N
+    num_bar_filled = int(bar_length * progress)
+    bar = '\033[35m#' * num_bar_filled + '\033[0m-' * (bar_length - num_bar_filled)
+    percent_complete = progress * 100
+    print(f'[{bar}] {percent_complete:.1f}% Complete', end='\r')
 
 # Creates the minHash signatures after generating hash functions
 def minHash(docs_signature_sets, hash_fn):
     min_hash_signatures = []
-
+    print("Starting MinHash")
     num_rows, num_cols = docs_signature_sets.shape
     min_hash_signatures = np.full((len(hash_fn), num_cols), np.inf)
 
     for r in range(num_rows):
+        print_progress_bar(r, num_rows)
         for c in range(num_cols):
             if docs_signature_sets[r][c]:
                 for i in range(len(hash_fn)):
@@ -280,7 +272,6 @@ if __name__ == '__main__':
     print("Starting to create all k-shingles of the documents...")
     t4 = time.time()
     all_docs_k_shingles = k_shingles()
-    print(f"First 3 document shingles: {all_docs_k_shingles[0]}, {all_docs_k_shingles[1]},{all_docs_k_shingles[2]}")
     t5 = time.time()
     print("Representing documents with k-shingles took", t5 - t4, "sec\n")
 
