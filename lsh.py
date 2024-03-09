@@ -107,6 +107,23 @@ def k_shingles():
 
 # METHOD FOR TASK 2
 # Creates a signatures set of the documents from the k-shingles list
+def k_shingles():
+    k = parameters_dictionary["k"]
+    docs_k_shingles = []  # holds the k-shingles of each document
+    for ID, text in document_list.items():
+        current_document = []
+        word_list = text.split()
+        for i in range(len(word_list)-k+1):
+            current_shingle = word_list[i:i+k]
+            current_document.append(" ".join(current_shingle))
+
+        docs_k_shingles.append(current_document)
+
+    return docs_k_shingles
+
+
+# METHOD FOR TASK 2
+# Creates a signatures set of the documents from the k-shingles list
 def signature_set(k_shingles):
     docs_sig_sets = []
     
@@ -230,6 +247,7 @@ if __name__ == '__main__':
     print("Starting to create all k-shingles of the documents...")
     t4 = time.time()
     all_docs_k_shingles = k_shingles()
+    print(f"First 3 document shingles: {all_docs_k_shingles[0]}, {all_docs_k_shingles[1]},{all_docs_k_shingles[2]}")
     t5 = time.time()
     print("Representing documents with k-shingles took", t5 - t4, "sec\n")
 
