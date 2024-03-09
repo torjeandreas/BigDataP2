@@ -196,14 +196,36 @@ def minHash(docs_signature_sets, hash_fn):
                         min_hash_signatures[i][c] = hash_val
     return min_hash_signatures
 
+def split(a, n):
+    k, m = divmod(len(a), n)
+    return [a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n)]
 
 # METHOD FOR TASK 4
 # Hashes the MinHash Signature Matrix into buckets and find candidate similar documents
 def lsh(m_matrix):
+    b = parameters_dictionary["b"] #20
     candidates = []  # list of candidate sets of documents for checking similarity
+    matches = []
+    bucket_dict_list = []
+    bands = np.array(split(m_matrix, b))
+    bands = bands.tolist()
+    for j, band in enumerate(bands):
+        buckets = dict()
+        for i, hash_val in enumerate(zip(*band)):
+            if buckets.get(hash_val) == None:
+                buckets[hash_val] = [i]
+            else:
+                buckets[hash_val].append(i)
+                matches.append((j, hash_val))
+        bucket_dict_list.append(buckets)
 
-    
-
+    for match in matches:
+        candy = bucket_dict_list[match[0]][match[1]]
+        for i in range(len(candy)):
+            for j in range(i+1,len(candy)):
+                pair=(candy[i],candy[j])
+                candidates.append(pair)
+    candidates = list(set(candidates))
     return candidates
 
 
@@ -212,8 +234,19 @@ def lsh(m_matrix):
 def candidates_similarities(candidate_docs, min_hash_matrix):
     similarity_dict = []
 
-    # implement your code here
-
+    doc = k_shingles()
+    for candidate in candidate_docs:
+        pairs = dict()
+        candidate1 = candidate[0]
+        candidate2 = candidate[1]
+        set1 = set(doc[candidate1])
+        set2 = set(doc[candidate2])
+        j_similarity = jaccard(set1, set2)
+        if j_similarity > parameters_dictionary["t"]:
+            ID1 = int(candidate1)
+            ID2 = int(candidate2)
+            pairs[(ID1, ID2)] = j_similarity
+            similarity_dict.append(pairs)
     return similarity_dict
 
 
@@ -290,7 +323,7 @@ if __name__ == '__main__':
     
     print("The pairs of documents are:\n")
     for p in true_pairs:
-        print(f"LSH algorith reveals that the BBC article {list(p.keys())[0][0]+1}.txt and {list(p.keys())[0][1]+1}.txt \
+        print(f"LSH algorithm reveals that the BBC article {list(p.keys())[0][0]+1}.txt and {list(p.keys())[0][1]+1}.txt \
               are {round(list(p.values())[0],2)*100}% similar")
         
         print("\n")
