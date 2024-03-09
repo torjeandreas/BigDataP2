@@ -91,9 +91,16 @@ def naive():
 # METHOD FOR TASK 1
 # Creates the k-Shingles of each document and returns a list of them
 def k_shingles():
+    k = parameters_dictionary["k"]
     docs_k_shingles = []  # holds the k-shingles of each document
+    for ID, text in document_list.items():
+        current_document = []
+        word_list = text.split()
+        for i in range(len(word_list)-k+1):
+            current_shingle = word_list[i:i+k]
+            current_document.append(" ".join(current_shingle))
 
-    
+        docs_k_shingles.append(current_document)
 
     return docs_k_shingles
 
@@ -102,27 +109,74 @@ def k_shingles():
 # Creates a signatures set of the documents from the k-shingles list
 def signature_set(k_shingles):
     docs_sig_sets = []
+    
 
-    # implement your code here
+    unique_shingles=[]
+    for shingle_list in k_shingles:
+        unique_shingles.extend(shingle_list)
+    
+    shingle_dict={}
+    unique_shingles=list(sorted(set(unique_shingles)))
+    for i in range(len(unique_shingles)):
+        shingle_dict[str(unique_shingles[i])]=i
 
+    input_matrix = np.zeros([len(unique_shingles), len(k_shingles)],dtype=bool)
+    
+    for j, shingle_list in enumerate(k_shingles):
+        for shingle in shingle_list:
+            i=shingle_dict[shingle]
+            input_matrix[i][j]=1
+    
+    docs_sig_sets=input_matrix.copy()
     return docs_sig_sets
 
+
+def larger_prime(N):
+    primes=[2]
+    i=3
+    while primes[-1]<=N:
+        i_is_prime=True
+        for p in primes:
+            if i%p==0:
+                i_is_prime=False
+        if i_is_prime:
+            primes.append(i)
+        i+=1
+    return primes[-1]
+
+def gen_func(num_perm,p,N):
+    a=random.randint(1,num_perm)
+    b=random.randint(1,num_perm)
+    return lambda r: ((a*r+b)%p)%N
 
 # METHOD FOR TASK 3
 
 # A function for generating hash functions
 def generate_hash_functions(num_perm, N):
     hash_funcs = []
+    p=larger_prime(N)
     
-    # implement your code here
-
+    for i in range(num_perm):
+        x=gen_func(num_perm,p,N)
+        while x in hash_funcs:
+            x=gen_func(num_perm,p,N)
+        hash_funcs.append(x)
     return hash_funcs
+
 # Creates the minHash signatures after generating hash functions
 def minHash(docs_signature_sets, hash_fn):
     min_hash_signatures = []
 
-    # implement your code here
+    num_rows, num_cols = docs_signature_sets.shape
+    min_hash_signatures = np.full((len(hash_fn), num_cols), np.inf)
 
+    for r in range(num_rows):
+        for c in range(num_cols):
+            if docs_signature_sets[r][c]:
+                for i in range(len(hash_fn)):
+                    hash_val = hash_fn[i](r)
+                    if hash_val < min_hash_signatures[i][c]:
+                        min_hash_signatures[i][c] = hash_val
     return min_hash_signatures
 
 
@@ -131,7 +185,7 @@ def minHash(docs_signature_sets, hash_fn):
 def lsh(m_matrix):
     candidates = []  # list of candidate sets of documents for checking similarity
 
-    # implement your code here
+    
 
     return candidates
 
