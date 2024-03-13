@@ -90,7 +90,18 @@ def naive():
 
 # METHOD FOR TASK 1
 # Creates the k-Shingles of each document and returns a list of them
+
+
+# NB! THE DOCUMENTATION HAS BEEN MADE IN PART BY CHATGPT
+# THE CODE ITSELF HAS BEEN MADE BY HUMAN BEINGS
+
 def k_shingles():
+    """
+    Generates k-shingles for each document.
+    
+    Returns:
+        list: A list of lists, where each sublist contains the k-shingles of a document.
+    """
     k = parameters_dictionary["k"]
     docs_k_shingles = []  # holds the k-shingles of each document
     for ID, text in document_list.items():
@@ -108,6 +119,15 @@ def k_shingles():
 # METHOD FOR TASK 2
 # Creates a signatures set of the documents from the k-shingles list
 def signature_set(k_shingles):
+    """
+    Creates a binary matrix representation of the presence of unique shingles across documents.
+    
+    Args:
+        k_shingles (list): A list of lists containing the k-shingles for each document.
+        
+    Returns:
+        numpy.ndarray: A binary matrix where rows represent unique shingles and columns represent documents.
+    """
     docs_sig_sets = []
     
 
@@ -117,6 +137,7 @@ def signature_set(k_shingles):
     
     shingle_dict={}
     unique_shingles=list(sorted(set(unique_shingles)))
+
     for i in range(len(unique_shingles)):
         shingle_dict[str(unique_shingles[i])]=i
 
@@ -131,20 +152,17 @@ def signature_set(k_shingles):
     return docs_sig_sets
 
 
-def larger_prime(N):
-    primes=[2]
-    i=3
-    while primes[-1]<=N:
-        i_is_prime=True
-        for p in primes:
-            if i%p==0:
-                i_is_prime=False
-        if i_is_prime:
-            primes.append(i)
-        i+=1
-    return primes[-1]
-
 def gen_func(p,N):
+    """
+    Generates a random hash function within the specified constraints.
+    
+    Args:
+        p (int): A prime number larger than the total number of unique shingles.
+        N (int): The number of rows in the document-signature matrix (total unique shingles).
+        
+    Returns:
+        function: A lambda function representing the generated hash function.
+    """
     a=random.randint(1,p-1)
     b=random.randint(1,p-1)
     return lambda r: ((a*r+b)%p)%N
@@ -153,17 +171,47 @@ def gen_func(p,N):
 
 # A function for generating hash functions
 def generate_hash_functions(num_perm, N):
+    """
+    Generates a specified number of hash functions for use in the MinHash algorithm.
+    
+    Args:
+        num_perm (int): The number of permutations, i.e., hash functions to generate.
+        N (int): Number of unique shingles.
+        
+    Returns:
+        list: A list of lambda functions, each representing a unique hash function.
+    """
     hash_funcs = []
+
+    #The p needs to be larger than N, so we found a prime number larger than any realistic N in order to reuse indefinetly.
     p=10000000207
     for i in range(num_perm):
         x=gen_func(p,N)
+
+        #Trying to prevent duplicate functions
         while x in hash_funcs:
             x=gen_func(p,N)
         hash_funcs.append(x)
     
     return hash_funcs
 
+
 def print_progress_bar(i, N):
+    """
+    Prints a progress bar to the console to visually indicate the progress of a task.
+
+    The progress bar is colored and updates dynamically in the terminal, providing a visual and numerical 
+    indication of the task's completion percentage. The function is designed to be called within a loop to 
+    update the progress bar in place.
+
+    Args:
+        i (int): The current progress of the task (e.g., the current loop iteration number). 
+                 Should start at 0 and go up to N-1.
+        N (int): The total number of iterations the task will perform, representing 100% completion.
+
+    Returns:
+        None: This function does not return a value but prints the progress bar to the standard output.
+    """
     bar_length = 40
     progress = i / N
     num_bar_filled = int(bar_length * progress)
@@ -173,6 +221,16 @@ def print_progress_bar(i, N):
 
 # Creates the minHash signatures after generating hash functions
 def minHash(docs_signature_sets, hash_fn):
+    """
+    Computes the MinHash signatures for all documents.
+    
+    Args:
+        docs_signature_sets (numpy.ndarray): The binary matrix of document shingles.
+        hash_fn (list): The list of hash functions.
+        
+    Returns:
+        numpy.ndarray: A matrix of MinHash signatures.
+    """
     min_hash_signatures = []
     print("Starting MinHash")
     num_rows, num_cols = docs_signature_sets.shape
@@ -188,6 +246,7 @@ def minHash(docs_signature_sets, hash_fn):
                         min_hash_signatures[i][c] = hash_val
     return min_hash_signatures
 
+#Code meant to split a matrix into bands.
 def split(a, n):
     k, m = divmod(len(a), n)
     return [a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n)]
@@ -195,6 +254,15 @@ def split(a, n):
 # METHOD FOR TASK 4
 # Hashes the MinHash Signature Matrix into buckets and find candidate similar documents
 def lsh(m_matrix):
+    """
+    Applies Locality-Sensitive Hashing (LSH) to group documents into buckets based on their MinHash signatures.
+    
+    Args:
+        m_matrix (numpy.ndarray): The matrix of MinHash signatures.
+        
+    Returns:
+        list: A list of tuples, each representing a pair of candidate documents for similarity checking.
+    """
     b = parameters_dictionary["b"] #20
     candidates = []  # list of candidate sets of documents for checking similarity
     matches = []
@@ -224,6 +292,17 @@ def lsh(m_matrix):
 # METHOD FOR TASK 5
 # Calculates the similarities of the candidate documents
 def candidates_similarities(candidate_docs, min_hash_matrix):
+    """
+    Calculates the Jaccard similarity for each pair of candidate documents.
+    
+    Args:
+        candidate_docs (list): A list of tuples, each containing indices of candidate document pairs.
+        min_hash_matrix (numpy.ndarray): The matrix of MinHash signatures.
+    
+    Returns:
+        list: A list of dictionaries, each mapping a document pair to its Jaccard similarity.
+    
+    """
     similarity_dict = []
 
     doc = k_shingles()
